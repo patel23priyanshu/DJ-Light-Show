@@ -1,6 +1,6 @@
 # 🎛️ DJ Light Show
 
-> An interactive, browser-based DJ light show controller with real-time music sync, 8 stunning light effects, and full visual controls — no installation needed.
+> An interactive, browser-based DJ light show controller with real-time music sync, 8 stunning light effects, and full visual controls - no installation needed.
 
 ![DJ Light Show](https://img.shields.io/badge/DJ-Light%20Show-7c3aed?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0tMiAxNFY4bDYgNHoiLz48L3N2Zz4=)
 ![HTML](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
@@ -24,16 +24,16 @@
 | 8 | **Tunnel** | Infinite zoom-through light tunnel |
 
 ### 🎨 Color Control
-- **8 Palette Presets** — Rainbow, Fire, Ice, Neon, Gold, Mono, Cyber, Sunset
-- **Custom Color Picker** — Pick any exact hex color
-- **Hue Cycle** — Auto-rotate through the color spectrum
+- **8 Palette Presets** - Rainbow, Fire, Ice, Neon, Gold, Mono, Cyber, Sunset
+- **Custom Color Picker** - Pick any exact hex color
+- **Hue Cycle** - Auto-rotate through the color spectrum
 
 ### 🎛️ Light Controls
-- **Effect Speed** — 1 to 10
-- **BPM Sync** — 60 to 200 BPM beat pulse
-- **Brightness** — 10% to 100%
-- **Beam Count** — 1 to 16 beams
-- **Spread Angle** — 10° to 180°
+- **Effect Speed** - 1 to 10
+- **BPM Sync** - 60 to 200 BPM beat pulse
+- **Brightness** - 10% to 100%
+- **Beam Count** - 1 to 16 beams
+- **Spread Angle** - 10° to 180°
 
 ### ✨ Visual FX Toggles
 | Toggle | Effect |
@@ -46,16 +46,16 @@
 | Hue Cycle | Continuous hue rotation |
 
 ### 🔄 Auto Effects
-- **Change Interval** — Set how often the effect auto-switches (2–30 seconds)
-- **Shuffle Order** — Random or sequential effect cycling
+- **Change Interval** - Set how often the effect auto-switches (2–30 seconds)
+- **Shuffle Order** - Random or sequential effect cycling
 
 ### 🎵 Music Sync (Web Audio API)
-- **🎤 Microphone** — Captures live audio from your mic; clap, snap, or play music nearby
-- **📂 Audio File** — Load a local audio file and sync lights to it
-- **Real-time Frequency Visualizer** — 64-bar spectrum analyzer in the panel
-- **Beat Meter Bar** — Glowing bass-pulse bar at the bottom of the stage
-- **Sensitivity** — Control how aggressively audio drives the lights
-- **Bass Threshold** — Set how loud the bass must be to trigger a beat
+- **🎤 Microphone** - Captures live audio from your mic; clap, snap, or play music nearby
+- **📂 Audio File** - Load a local audio file and sync lights to it
+- **Real-time Frequency Visualizer** - 64-bar spectrum analyzer in the panel
+- **Beat Meter Bar** - Glowing bass-pulse bar at the bottom of the stage
+- **Sensitivity** - Control how aggressively audio drives the lights
+- **Bass Threshold** - Set how loud the bass must be to trigger a beat
 
 #### React Modes
 | Mode | Behavior |
@@ -69,8 +69,8 @@
 `.mp3` · `.wav` · `.ogg` · `.m4a` · `.aac` · `.flac`
 
 ### 🖥️ UI Controls
-- **Fullscreen Toggle** — Top-right button or `F11`
-- **Panel Toggle** — Slide the control panel in/out with the `◀` tab or `✕` close button
+- **Fullscreen Toggle** - Top-right button or `F11`
+- **Panel Toggle** - Slide the control panel in/out with the `◀` tab or `✕` close button
 
 ---
 
@@ -116,20 +116,20 @@ xdg-open index.html    # Linux
 
 ```
 DJ Light/
-├── index.html   — Main HTML, stage layout & control panel
-├── style.css    — All styles, dark theme, animations
-├── app.js       — Light engine, music sync, control wiring
-└── README.md    — You are here
+├── index.html   - Main HTML, stage layout & control panel
+├── style.css    - All styles, dark theme, animations
+├── app.js       - Light engine, music sync, control wiring
+└── README.md    - You are here
 ```
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **HTML5 Canvas** — All light effects rendered in real-time
-- **Web Audio API** — Microphone & file audio analysis, FFT beat detection
-- **Vanilla CSS** — Dark glassmorphism UI, smooth transitions
-- **Vanilla JS** — Zero dependencies, zero frameworks
+- **HTML5 Canvas** - All light effects rendered in real-time
+- **Web Audio API** - Microphone & file audio analysis, FFT beat detection
+- **Vanilla CSS** - Dark glassmorphism UI, smooth transitions
+- **Vanilla JS** - Zero dependencies, zero frameworks
 
 ---
 
@@ -145,7 +145,7 @@ DJ Light/
 
 ## 📄 License
 
-MIT — free to use, remix, and share. Have fun! 🎶
+MIT - free to use, remix, and share. Have fun! 🎶
 
 ---
 
