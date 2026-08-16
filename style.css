@@ -521,13 +521,18 @@ html, body {
 /* ── Beat ring ── */
 #beat-ring {
   position: fixed;
-  top: 50%; left: calc((100% - var(--panel-w)) / 2);
+  top: 50%;
+  left: calc((100% - var(--panel-w)) / 2);
   width: 0; height: 0;
   border-radius: 50%;
   border: 2px solid transparent;
   transform: translate(-50%, -50%);
   pointer-events: none;
   z-index: 20;
+  transition: left 0.35s cubic-bezier(.4,0,.2,1);
+}
+#beat-ring.stage-full {
+  left: 50%;
 }
 #beat-ring.pulse {
   animation: beatRing 0.4s ease-out forwards;

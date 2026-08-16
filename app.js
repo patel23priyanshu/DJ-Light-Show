@@ -61,7 +61,7 @@ const PALETTES = {
   ice:     (t) => { const h = 190 + t * 60; return `hsl(${h},100%,${50+t*20}%)`; },
   neon:    (t) => { const h = [120,300,180][Math.floor(t*3)%3]; return `hsl(${h},100%,60%)`; },
   gold:    (t) => { const h = 40 + t * 20; return `hsl(${h},100%,${50+t*15}%)`; },
-  mono:    (_)  => `hsl(0,0%,${70+Math.random()*30}%)`,
+  mono:    (_)  => `hsl(0,0%,${70 + Math.sin(frame * 0.03) * 18}%)`,
   cyber:   (t) => { const h = 150 + t * 130; return `hsl(${h},100%,60%)`; },
   sunset:  (t) => { const h = 340 + t * 40; return `hsl(${h},100%,${55+t*10}%)`; },
   custom:  (_)  => state.customColor,
@@ -119,7 +119,7 @@ function doBeat() {
 }
 
 // ── Effect switching ───────────────────────────────────────
-const FX_LIST = ['spotlight','laser','wash','scanner','galaxy','firework','tunnel','strobe'];
+const FX_LIST = ['spotlight','laser','wash','scanner','galaxy','firework','tunnel','strobe','parcan','derby','matrix','discoball'];
 let autoTimer = 0;
 
 function setEffect(name) {
@@ -403,6 +403,280 @@ function drawFloor(t) {
 let flashAlpha = 0;
 function doFlash() { flashAlpha = 1; }
 
+/* ═══════════════════════════════════════
+   PAR CANS – fixed overhead can lights
+═══════════════════════════════════════ */
+function drawParCans(t) {
+  const W = canvas.width, H = canvas.height;
+  const count = state.beams;
+  const br = effectiveBrightness();
+  const tightSpread = 0.14; // ~8 deg half-angle
+
+  for (let i = 0; i < count; i++) {
+    const cx = W * (0.05 + (i / (count - 1 || 1)) * 0.9);
+    const color = getColor(i / count);
+    // Slow gentle color breathe
+    const breath = 0.85 + Math.sin(t * state.speed * 0.2 + i * 0.7) * 0.15;
+
+    // Cone fill
+    const coneGrad = ctx.createRadialGradient(cx, 0, 0, cx, 0, H);
+    coneGrad.addColorStop(0, color.replace('hsl(','hsla(').replace(')',`,${0.45 * breath})`));
+    coneGrad.addColorStop(0.6, color.replace('hsl(','hsla(').replace(')',`,${0.12 * breath})`));
+    coneGrad.addColorStop(1, 'transparent');
+    ctx.save();
+    ctx.globalAlpha = br;
+    ctx.fillStyle = coneGrad;
+    ctx.beginPath();
+    ctx.moveTo(cx, 0);
+    ctx.arc(cx, 0, H, Math.PI/2 - tightSpread, Math.PI/2 + tightSpread);
+    ctx.closePath();
+    ctx.fill();
+
+    // Hard beam centre line
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 18;
+    ctx.globalAlpha = br * breath;
+    ctx.beginPath();
+    ctx.moveTo(cx, 0); ctx.lineTo(cx, H);
+    ctx.stroke();
+    ctx.restore();
+
+    // Housing body
+    ctx.save();
+    ctx.fillStyle = '#1a1a2e';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(cx - 14, -2, 28, 22, 4);
+    ctx.fill(); ctx.stroke();
+    // Lens glow
+    const lg = ctx.createRadialGradient(cx, 10, 0, cx, 10, 13);
+    lg.addColorStop(0, 'rgba(255,255,255,0.95)');
+    lg.addColorStop(0.35, color.replace('hsl(','hsla(').replace(')',',0.7)'));
+    lg.addColorStop(1, 'transparent');
+    ctx.globalAlpha = br * breath;
+    ctx.fillStyle = lg;
+    ctx.beginPath(); ctx.arc(cx, 10, 13, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    // Floor pool
+    const poolR = H * Math.tan(tightSpread) * 0.8;
+    const pg = ctx.createRadialGradient(cx, H, 0, cx, H, poolR);
+    pg.addColorStop(0, color.replace('hsl(','hsla(').replace(')',`,${0.35 * breath})`));
+    pg.addColorStop(1, 'transparent');
+    ctx.save();
+    ctx.globalAlpha = br;
+    ctx.fillStyle = pg;
+    ctx.beginPath();
+    ctx.ellipse(cx, H - 10, poolR, poolR * 0.25, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+/* ═══════════════════════════════════════
+   DERBY – spinning moonflower beams
+═══════════════════════════════════════ */
+function drawDerby(t) {
+  const W = canvas.width, H = canvas.height;
+  const fixtureCount = Math.min(state.beams, 5);
+  const br = effectiveBrightness();
+  const beamsPerFixture = 5;
+
+  for (let d = 0; d < fixtureCount; d++) {
+    const cx = W * (0.1 + (d / (fixtureCount - 1 || 1)) * 0.8);
+    const cy = 18;
+    const spinDir = d % 2 === 0 ? 1 : -1;
+    const spin = t * state.speed * 0.45 * spinDir + (d / fixtureCount) * Math.PI * 2;
+
+    for (let b = 0; b < beamsPerFixture; b++) {
+      const a = spin + (b / beamsPerFixture) * Math.PI * 2;
+      // Tilt beam outward from vertical
+      const tilt = (state.spread / 180) * 0.65;
+      const beamAngle = Math.PI / 2 + Math.sin(a) * tilt;
+      const color = getColor((d / fixtureCount) + (b / beamsPerFixture) * 0.2);
+
+      // Beam line
+      const bx = cx + Math.cos(beamAngle) * H * 1.3;
+      const by = cy + Math.sin(beamAngle) * H * 1.3;
+      ctx.save();
+      ctx.globalAlpha = br * 0.7;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.2;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy); ctx.lineTo(bx, by);
+      ctx.stroke();
+
+      // Reflection spot
+      if (by > 0 && by < H && bx > -40 && bx < W + 40) {
+        ctx.globalAlpha = br * 0.75;
+        const sg = ctx.createRadialGradient(bx, by, 0, bx, by, 18);
+        sg.addColorStop(0, 'rgba(255,255,255,0.9)');
+        sg.addColorStop(0.3, color.replace('hsl(','hsla(').replace(')',',0.6)'));
+        sg.addColorStop(1, 'transparent');
+        ctx.fillStyle = sg;
+        ctx.beginPath(); ctx.arc(bx, by, 18, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // Fixture head
+    ctx.save();
+    ctx.fillStyle = '#111';
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(cx, cy, 11, 0, Math.PI*2);
+    ctx.fill(); ctx.stroke();
+    // Spinning indicator dot
+    const dotA = spin;
+    ctx.fillStyle = getColor(d / fixtureCount);
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.arc(cx + Math.cos(dotA)*6, cy + Math.sin(dotA)*6, 2.5, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+/* ═══════════════════════════════════════
+   MATRIX – LED grid of beaming dots
+═══════════════════════════════════════ */
+function drawMatrix(t) {
+  const W = canvas.width, H = canvas.height;
+  const cols = Math.max(4, Math.min(state.beams + 2, 14));
+  const rows = Math.ceil(cols * 0.55);
+  const cellW = W / cols;
+  const cellH = H / (rows + 1);
+  const br = effectiveBrightness();
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = (c + 0.5) * cellW;
+      const y = (r + 0.5) * cellH;
+      // Wave propagating through grid
+      const wave = Math.sin(t * state.speed * 0.4 + c * 0.55 + r * 0.45);
+      const pulse = (wave + 1) / 2; // 0-1
+      const phase = ((c / cols) + (r / rows) * 0.5 + t * state.speed * 0.05) % 1;
+      const color = getColor(phase);
+
+      ctx.save();
+      ctx.globalAlpha = br * (0.25 + pulse * 0.75);
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 14;
+      // Dot
+      ctx.beginPath();
+      ctx.arc(x, y, 3.5, 0, Math.PI*2);
+      ctx.fill();
+
+      // Down-beam when bright
+      if (pulse > 0.55) {
+        ctx.globalAlpha = br * (pulse - 0.55) * 0.6;
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = color;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.moveTo(x, y + 4);
+        ctx.lineTo(x, H);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // Housing grid dot (static)
+      ctx.save();
+      ctx.fillStyle = '#1c1c2e';
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+}
+
+/* ═══════════════════════════════════════
+   DISCO BALL – mirror ball reflections
+═══════════════════════════════════════ */
+function drawDiscoBall(t) {
+  const W = canvas.width, H = canvas.height;
+  const ballX = W / 2;
+  const ballY = H * 0.14;
+  const ballR = Math.min(W, H) * 0.075;
+  const br = effectiveBrightness();
+  const spin = t * state.speed * 0.25;
+  const spotsCount = 35 + state.beams * 3;
+
+  // Hanging wire
+  ctx.save();
+  ctx.strokeStyle = 'rgba(180,180,200,0.35)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(ballX, 0); ctx.lineTo(ballX, ballY - ballR); ctx.stroke();
+  ctx.restore();
+
+  // Ball body gradient
+  const bg = ctx.createRadialGradient(
+    ballX - ballR*0.35, ballY - ballR*0.35, ballR*0.05,
+    ballX, ballY, ballR
+  );
+  bg.addColorStop(0, 'rgba(255,255,255,0.85)');
+  bg.addColorStop(0.4, 'rgba(160,165,185,0.65)');
+  bg.addColorStop(1, 'rgba(30,30,50,0.75)');
+  ctx.save();
+  ctx.globalAlpha = br;
+  ctx.fillStyle = bg;
+  ctx.beginPath(); ctx.arc(ballX, ballY, ballR, 0, Math.PI*2); ctx.fill();
+
+  // Mirror tile grid on the ball
+  const tR = 8, tC = 14;
+  for (let r = 0; r < tR; r++) {
+    for (let c = 0; c < tC; c++) {
+      const phi   = (r / tR) * Math.PI;
+      const theta = (c / tC) * Math.PI * 2 + spin;
+      const sx = ballX + ballR * Math.sin(phi) * Math.cos(theta);
+      const sy = ballY + ballR * Math.cos(phi);
+      const depth = Math.sin(phi) * Math.sin(theta);
+      if (depth < 0) continue;
+      const ts = ballR * 0.13;
+      const shine = Math.pow((depth + 1) / 2, 1.5);
+      ctx.globalAlpha = br * (0.3 + shine * 0.7);
+      ctx.fillStyle = `rgba(255,255,255,${shine})`;
+      ctx.fillRect(sx - ts/2, sy - ts/2, ts, ts);
+    }
+  }
+  ctx.restore();
+
+  // Reflected light spots dancing across stage
+  for (let i = 0; i < spotsCount; i++) {
+    const a = (i / spotsCount) * Math.PI * 2 + spin * 1.8;
+    const elev = Math.sin(i * 0.83 + t * state.speed * 0.18) * Math.PI * 0.45;
+    const dist = (0.28 + Math.abs(Math.sin(i * 1.17 + spin * 0.7))) * Math.min(W, H) * 0.52;
+    const rx = ballX + Math.cos(a) * dist;
+    const ry = ballY + Math.sin(elev) * dist * 0.65;
+
+    if (rx < -30 || rx > W + 30 || ry < -60 || ry > H + 30) continue;
+
+    const color = getColor(i / spotsCount);
+    const flicker = (Math.sin(i * 2.3 + t * 3) + 1) / 2;
+    const spotR = 5 + Math.sin(i + t * 1.5) * 3;
+
+    ctx.save();
+    ctx.globalAlpha = br * 0.75 * flicker;
+    const sg = ctx.createRadialGradient(rx, ry, 0, rx, ry, spotR + 6);
+    sg.addColorStop(0, 'rgba(255,255,255,0.95)');
+    sg.addColorStop(0.3, color.replace('hsl(','hsla(').replace(')',',0.85)'));
+    sg.addColorStop(1, 'transparent');
+    ctx.fillStyle = sg;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 10;
+    ctx.beginPath(); ctx.arc(rx, ry, spotR + 6, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+}
+
 // ── MAIN RENDER LOOP ───────────────────────────────────────
 let frame = 0;
 
@@ -449,6 +723,10 @@ function render(now) {
     case 'galaxy':    drawGalaxy(t);    break;
     case 'firework':  drawFirework(t);  break;
     case 'tunnel':    drawTunnel(t);    break;
+    case 'parcan':    drawParCans(t);   break;
+    case 'derby':     drawDerby(t);     break;
+    case 'matrix':    drawMatrix(t);    break;
+    case 'discoball': drawDiscoBall(t); break;
   }
 
   if (state.glitter) drawGlitter();
@@ -856,6 +1134,7 @@ function togglePanel() {
   stageEl.classList.toggle('stage-full', isHidden);
   btnToggle.classList.toggle('panel-hidden-tab', isHidden);
   beatMeter.classList.toggle('stage-full', isHidden);
+  document.getElementById('beat-ring').classList.toggle('stage-full', isHidden);
   setTimeout(resizeCanvases, 380);
 }
 btnToggle.addEventListener('click', togglePanel);
