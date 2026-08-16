@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DJ Light Show – Ultimate Light Controller</title>
+  <meta name="description" content="Interactive DJ light show controller with strobes, lasers, spotlights, color wash, and beat effects. Control speed, intensity, and style in real time." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════ STAGE ═══════════════════ -->
+  <div id="stage">
+
+    <!-- Ambient fog layer -->
+    <div id="fog-layer"></div>
+
+    <!-- Canvas for all light effects -->
+    <canvas id="lightCanvas"></canvas>
+
+    <!-- Stage floor reflection -->
+    <div id="stage-floor">
+      <canvas id="floorCanvas"></canvas>
+    </div>
+
+    <!-- Top header overlay -->
+    <header id="top-bar">
+      <div id="logo">
+        <span class="logo-dj">DJ</span><span class="logo-light">LIGHT</span>
+        <span class="logo-tag">SHOW</span>
+      </div>
+      <div id="status-strip">
+        <div class="status-chip" id="chip-effect">
+          <span class="chip-dot"></span>
+          <span id="status-effect-label">Spotlight</span>
+        </div>
+        <div class="status-chip" id="chip-bpm">
+          <span class="chip-dot bpm-dot"></span>
+          <span id="status-bpm-label">120 BPM</span>
+        </div>
+        <div class="status-chip" id="chip-power">
+          <span class="chip-dot power-dot"></span>
+          <span>LIVE</span>
+        </div>
+        <button id="btn-fullscreen" title="Toggle Fullscreen (F11)" aria-label="Toggle Fullscreen">
+          <span id="fs-icon">⛶</span>
+          <span id="fs-label">FULLSCREEN</span>
+        </button>
+      </div>
+    </header>
+
+  </div>
+
+  <!-- Panel toggle tab (floats at right edge of stage) -->
+  <button id="btn-panel-toggle" title="Toggle Control Panel">
+    <span id="panel-toggle-icon">◀</span>
+  </button>
+
+
+  <aside id="control-panel">
+
+    <div id="panel-header">
+      <span class="panel-icon">🎛️</span>
+      <span class="panel-title">LIGHT CONTROLLER</span>
+      <button id="btn-panel-close" title="Close Panel">✕</button>
+    </div>
+
+    <!-- ── Effect Presets ── -->
+    <section class="ctrl-section">
+      <h3 class="section-label">EFFECT MODE</h3>
+      <div id="effect-grid">
+        <button class="fx-btn active" data-fx="spotlight" id="btn-spotlight">
+          <span class="fx-icon">🔦</span>
+          <span>Spotlight</span>
+        </button>
+        <button class="fx-btn" data-fx="strobe" id="btn-strobe">
+          <span class="fx-icon">⚡</span>
+          <span>Strobe</span>
+        </button>
+        <button class="fx-btn" data-fx="laser" id="btn-laser">
+          <span class="fx-icon">🔴</span>
+          <span>Laser</span>
+        </button>
+        <button class="fx-btn" data-fx="wash" id="btn-wash">
+          <span class="fx-icon">🌈</span>
+          <span>Color Wash</span>
+        </button>
+        <button class="fx-btn" data-fx="scanner" id="btn-scanner">
+          <span class="fx-icon">📡</span>
+          <span>Scanner</span>
+        </button>
+        <button class="fx-btn" data-fx="galaxy" id="btn-galaxy">
+          <span class="fx-icon">🌌</span>
+          <span>Galaxy</span>
+        </button>
+        <button class="fx-btn" data-fx="firework" id="btn-firework">
+          <span class="fx-icon">🎆</span>
+          <span>Firework</span>
+        </button>
+        <button class="fx-btn" data-fx="tunnel" id="btn-tunnel">
+          <span class="fx-icon">🕳️</span>
+          <span>Tunnel</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ── Color Palette ── -->
+    <section class="ctrl-section">
+      <h3 class="section-label">COLOR PALETTE</h3>
+      <div id="color-presets">
+        <button class="color-btn active" data-palette="rainbow" style="background: conic-gradient(red,orange,yellow,lime,cyan,blue,violet,red);" title="Rainbow"></button>
+        <button class="color-btn" data-palette="fire"    style="background: linear-gradient(135deg,#ff4400,#ff9900,#ffcc00);" title="Fire"></button>
+        <button class="color-btn" data-palette="ice"     style="background: linear-gradient(135deg,#00ccff,#0044ff,#aa00ff);" title="Ice"></button>
+        <button class="color-btn" data-palette="neon"    style="background: linear-gradient(135deg,#39ff14,#ff00ff,#00f5ff);" title="Neon"></button>
+        <button class="color-btn" data-palette="gold"    style="background: linear-gradient(135deg,#ffd700,#ff8c00,#ff4500);" title="Gold"></button>
+        <button class="color-btn" data-palette="mono"    style="background: linear-gradient(135deg,#ffffff,#aaaaaa,#444444);" title="Mono"></button>
+        <button class="color-btn" data-palette="cyber"   style="background: linear-gradient(135deg,#00ff9f,#00b8ff,#bf00ff);" title="Cyber"></button>
+        <button class="color-btn" data-palette="sunset"  style="background: linear-gradient(135deg,#f9005a,#fc6767,#f5a623);" title="Sunset"></button>
+      </div>
+      <!-- Custom color picker -->
+      <div id="custom-color-row">
+        <label class="ctrl-label" for="customColor">Custom</label>
+        <input type="color" id="customColor" value="#ff00ff" class="color-picker" />
+      </div>
+    </section>
+
+    <!-- ── Speed / BPM ── -->
+    <section class="ctrl-section">
+      <h3 class="section-label">SPEED & BPM</h3>
+      <div class="slider-group">
+        <label class="ctrl-label">Effect Speed
+          <span class="val-badge" id="speedVal">5</span>
+        </label>
+        <input type="range" id="speedSlider" min="1" max="10" value="5" class="ctrl-slider" />
+      </div>
+      <div class="slider-group">
+        <label class="ctrl-label">BPM Sync
+          <span class="val-badge" id="bpmVal">120</span>
+        </label>
+        <input type="range" id="bpmSlider" min="60" max="200" value="120" class="ctrl-slider bpm-slider" />
+      </div>
+    </section>
+
+    <!-- ── Intensity ── -->
+    <section class="ctrl-section">
+      <h3 class="section-label">INTENSITY & BEAMS</h3>
+      <div class="slider-group">
+        <label class="ctrl-label">Brightness
+          <span class="val-badge" id="brightnessVal">80%</span>
+        </label>
+        <input type="range" id="brightnessSlider" min="10" max="100" value="80" class="ctrl-slider" />
+      </div>
+      <div class="slider-group">
+        <label class="ctrl-label">Beam Count
+          <span class="val-badge" id="beamVal">6</span>
+        </label>
+        <input type="range" id="beamSlider" min="1" max="16" value="6" class="ctrl-slider" />
+      </div>
+      <div class="slider-group">
+        <label class="ctrl-label">Spread Angle
+          <span class="val-badge" id="spreadVal">60°</span>
+        </label>
+        <input type="range" id="spreadSlider" min="10" max="180" value="60" class="ctrl-slider" />
+      </div>
+    </section>
+
+    <!-- ── Visual FX Toggles ── -->
+    <section class="ctrl-section">
+      <h3 class="section-label">VISUAL FX</h3>
+      <div id="toggle-grid">
+        <label class="toggle-item">
+          <input type="checkbox" id="tog-fog" class="tog" checked />
+          <span class="tog-track"><span class="tog-thumb"></span></span>
+          <span class="tog-label">Fog Machine</span>
+        </label>
+        <label class="toggle-item">
+          <input type="checkbox" id="tog-floor" class="tog" checked />
+          <span class="tog-track"><span class="tog-thumb"></span></span>
+          <span class="tog-label">Floor Glow</span>
+        </label>
+        <label class="toggle-item">
+          <input type="checkbox" id="tog-pulse" class="tog" checked />
+          <span class="tog-track"><span class="tog-thumb"></span></span>
+          <span class="tog-label">Beat Pulse</span>
+        </label>
+        <label class="toggle-item">
+          <input type="checkbox" id="tog-trail" class="tog" />
+          <span class="tog-track"><span class="tog-thumb"></span></span>
+          <span class="tog-label">Light Trail</span>
+        </label>
+        <label class="toggle-item">
+          <input type="checkbox" id="tog-glitter" class="tog" />
+          <span class="tog-track"><span class="tog-thumb"></span></span>
+          <span class="tog-label">Glitter</span>
+        </label>
+        <label class="toggle-item">
+          <input type="checkbox" id="tog-rainbow" class="tog" checked />
+          <span class="tog-track"><span class="tog-thumb"></span></span>
+          <span class="tog-label">Hue Cycle</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- ── Auto Effects ── -->
+    <section class="ctrl-section">
+      <h3 class="section-label">AUTO EFFECTS</h3>
+      <div class="slider-group">
+        <label class="ctrl-label">Change Interval
+          <span class="val-badge" id="autoIntervalVal">8s</span>
+        </label>
+        <input type="range" id="autoIntervalSlider" min="2" max="30" value="8" class="ctrl-slider" />
+      </div>
+      <label class="toggle-item" style="margin-top:4px">
+        <input type="checkbox" id="tog-auto-shuffle" class="tog" checked />
+        <span class="tog-track"><span class="tog-thumb"></span></span>
+        <span class="tog-label">Shuffle Order</span>
+      </label>
+    </section>
+
+    <!-- ── Music Sync ── -->
+    <section class="ctrl-section" id="music-sync-section">
+      <h3 class="section-label">🎵 MUSIC SYNC</h3>
+
+      <div id="music-source-row">
+        <button id="btn-mic" class="music-src-btn" title="Use microphone">
+          <span>🎤</span> Mic
+        </button>
+        <label class="music-src-btn file-label" for="audioFileInput" title="Load audio file">
+          <span>📂</span> File
+        </label>
+        <input type="file" id="audioFileInput" accept="audio/*" style="display:none" />
+        <button id="btn-stop-sync" class="music-src-btn stop-sync-btn" style="display:none" title="Stop sync">
+          <span>⏹</span> Stop
+        </button>
+      </div>
+
+      <!-- Audio element for file playback -->
+      <audio id="audioPlayer" style="width:100%;margin-top:8px;display:none" controls></audio>
+
+      <div id="music-status">
+        <span id="music-status-dot"></span>
+        <span id="music-status-text">Inactive</span>
+      </div>
+
+      <!-- Frequency visualizer -->
+      <div id="audio-visualizer">
+        <canvas id="vizCanvas"></canvas>
+      </div>
+
+
+      <div class="slider-group" style="margin-top:12px">
+        <label class="ctrl-label">Sensitivity
+          <span class="val-badge" id="sensitivityVal">7</span>
+        </label>
+        <input type="range" id="sensitivitySlider" min="1" max="10" value="7" class="ctrl-slider" />
+      </div>
+      <div class="slider-group">
+        <label class="ctrl-label">Bass Threshold
+          <span class="val-badge" id="bassThresholdVal">40</span>
+        </label>
+        <input type="range" id="bassThresholdSlider" min="5" max="100" value="40" class="ctrl-slider" />
+      </div>
+      <div class="slider-group">
+        <label class="ctrl-label">React Mode</label>
+        <div id="react-mode-btns">
+          <button class="react-btn active" data-react="brightness">Bright</button>
+          <button class="react-btn" data-react="beams">Beams</button>
+          <button class="react-btn" data-react="color">Color</button>
+          <button class="react-btn" data-react="effect">Effect</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Master Controls ── -->
+    <section class="ctrl-section">
+      <h3 class="section-label">MASTER</h3>
+      <div id="master-btns">
+        <button id="btn-blackout" class="master-btn blackout-btn">
+          <span>⬛</span> BLACKOUT
+        </button>
+        <button id="btn-strobe-flash" class="master-btn strobe-btn">
+          <span>⚡</span> FLASH
+        </button>
+        <button id="btn-auto" class="master-btn auto-btn active-auto">
+          <span>🔄</span> AUTO
+        </button>
+      </div>
+    </section>
+
+  </aside>
+
+  <!-- BPM Beat indicator (floating) -->
+  <div id="beat-ring"></div>
+
+  <!-- Beat meter bar -->
+  <div id="beat-meter"><div id="beat-meter-fill"></div></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
